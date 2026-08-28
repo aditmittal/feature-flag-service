@@ -87,12 +87,37 @@ public class FeatureFlagService {
         return toResponse(featureFlagRepository.save(flag));
     }
 
+    public String evaluate(
+            String projectId,
+            String name,
+            String user
+    ){
+        FeatureFlag flag = featureFlagRepository.findByProjectIdAndName(projectId, name)
+                .orElseThrow(() -> new ResourceNotFoundException("Feature flag not found"));
+        return switch (flag.getState()) {
+            case ON -> "on";
+            case OFF -> "off";
+            case DEFAULT -> evaluateDefault(name, user);
+        };
+    }
+
 
     private FeatureFlagResponse toResponse(FeatureFlag flag){
         return new FeatureFlagResponse(
                 flag.getName(),
                 flag.getState()
         );
+    }
+
+    private String evaluateDefault(
+            String flagName,
+            String user
+    ) {
+        int hash = Math.abs(
+                (flagName + ":" + user).hashCode()
+        );
+
+        return hash % 2 == 0 ? "on" : "off";
     }
 
 }

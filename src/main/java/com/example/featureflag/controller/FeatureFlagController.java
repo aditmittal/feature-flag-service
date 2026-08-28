@@ -63,4 +63,17 @@ public class FeatureFlagController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/eval")
+    public String evaluate(
+            @PathVariable String projectId,
+            @RequestParam String flag,
+            @RequestParam String user
+    ) {
+        return featureFlagService.evaluate(
+                projectId,
+                flag,
+                user
+        );
+    }
+
 }
