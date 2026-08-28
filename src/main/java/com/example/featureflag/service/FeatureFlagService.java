@@ -89,16 +89,26 @@ public class FeatureFlagService {
 
     public String evaluate(
             String projectId,
-            String name,
+            String flagName,
             String user
-    ){
-        FeatureFlag flag = featureFlagRepository.findByProjectIdAndName(projectId, name)
-                .orElseThrow(() -> new ResourceNotFoundException("Feature flag not found"));
+    ) {
+        FeatureFlag flag = featureFlagRepository
+                .findByProjectIdAndName(projectId, flagName)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("feature flag not found")
+                );
+
         return switch (flag.getState()) {
             case ON -> "on";
             case OFF -> "off";
-            case DEFAULT -> evaluateDefault(name, user);
+            case DEFAULT -> evaluateDefault(flagName, user) ? "on" : "off";
         };
+    }
+
+    private boolean evaluateDefault(String flagName, String user) {
+        return Math.abs(
+                (flagName + ":" + user).hashCode()
+        ) % 2 == 0;
     }
 
 
@@ -108,16 +118,4 @@ public class FeatureFlagService {
                 flag.getState()
         );
     }
-
-    private String evaluateDefault(
-            String flagName,
-            String user
-    ) {
-        int hash = Math.abs(
-                (flagName + ":" + user).hashCode()
-        );
-
-        return hash % 2 == 0 ? "on" : "off";
-    }
-
 }

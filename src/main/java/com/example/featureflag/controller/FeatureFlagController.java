@@ -69,11 +69,7 @@ public class FeatureFlagController {
             @RequestParam String flag,
             @RequestParam String user
     ) {
-        return featureFlagService.evaluate(
-                projectId,
-                flag,
-                user
-        );
+        return featureFlagService.evaluate(projectId, flag, user);
     }
 
 }
